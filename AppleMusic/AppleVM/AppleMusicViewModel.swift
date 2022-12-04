@@ -14,10 +14,10 @@ protocol AppleMusicVMProtocol {
     func requestNextPage()
     func getName(for index : Int) -> String
     func getArtistName(for index : Int) -> String
-    func getImage(for index:Int, completion: @escaping(Data?)->Void)
+    func getImage(for url:URL, completion: @escaping(Data?)->Void)
     var count: Int { get }
     func getGenres(for index: Int) -> String
-    func getDate(for index: Int) -> String
+    func getDate(for date: String) -> String
 }
 
 
@@ -38,7 +38,7 @@ protocol AppleMusicVMProtocol {
 
 class AppleMusicViewModel {
     typealias UpdateHandler = (()->Void)
-    private var musics : [Music]
+    var musics : [Music]
     
     var favMusics : [AppleMusic]{
         didSet{
@@ -87,7 +87,7 @@ extension AppleMusicViewModel{
             return
         }
         print(id)
-        self.cordata.buildAlbum(id : id, data: data, name: self.musics[id].name, artistName: self.musics[id].artistName, date: self.getDate(for: id), genres: self.getGenres(for: id))
+        self.cordata.buildAlbum(id : id, data: data, name: self.musics[id].name, artistName: self.musics[id].artistName, date: self.getDate(for: self.getDate(for: self.musics[id].releaseDate)), genres: self.getGenres(for: id))
 //        self.cordata.saveContext()
 //        self.favMusics.append(id)
         self.cordata.addToCordata(id: id)
@@ -111,6 +111,7 @@ extension AppleMusicViewModel{
             return
         }
     }
+    
 }
 
 extension AppleMusicViewModel : AppleMusicVMProtocol{
@@ -127,9 +128,11 @@ extension AppleMusicViewModel : AppleMusicVMProtocol{
         return "\(temp)"
     }
     
-    func getDate(for index: Int) -> String {
-        guard index < self.count else { return "0000,00,00" }
-        let temp = self.musics[index].releaseDate
+    func getDate(for date : String) -> String {
+//        guard let temp = date else{
+//            return "0000,00,00"
+//        }
+        let temp = date
         let pre = temp.prefix(4)
         let last = temp.suffix(2)
         var mid = temp.dropFirst(5)
@@ -138,6 +141,7 @@ extension AppleMusicViewModel : AppleMusicVMProtocol{
         return "\(self.months[month-1]) \(last), \(pre)"
         
     }
+    
     
     var count: Int {
         return self.musics.count
@@ -183,9 +187,8 @@ extension AppleMusicViewModel : AppleMusicVMProtocol{
         return self.musics[index].artistName
     }
     
-    func getImage(for index: Int, completion: @escaping (Data?) -> Void) {
-        guard index < self.count else { return }
-        let url = self.musics[index].artworkUrl100
+    func getImage(for url: URL, completion: @escaping (Data?) -> Void) {
+        
         self.network.fetchRawData(with: url) { (result : Result<Data, NetworkError>) in
             switch result{
                 
@@ -195,6 +198,11 @@ extension AppleMusicViewModel : AppleMusicVMProtocol{
                 print(err)
             }
         }
+    }
+    
+    func getFavName(for index: Int) -> String {
+        guard index < self.count else { return "" }
+        return self.favMusics[index].artistName ?? "NoName"
     }
 }
 

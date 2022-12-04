@@ -50,21 +50,32 @@ class MusicViewController: UIViewController {
         guard let detail = segue.destination as?  AppleMusicDetailViewController else{
             return
         }
-        guard let sender = sender as? Int else{
-//            print(sender)
+        guard let id = sender as? Int else{
             return
         }
-        self.appleMusicViewModel.getImage(for: sender, completion: { data in
+        guard var sender = sender as? Int else{
+            print(sender)
+            return
+        }
+        let temp = self.appleMusicViewModel.musics[sender]
+        self.appleMusicViewModel.getImage(for: temp.artworkUrl100, completion: { data in
             guard let data = data else{
                 return
             }
+            print("************")
+
             DispatchQueue.main.async {
-                detail.name?.text = self.appleMusicViewModel.getName(for: sender)
-                detail.artistName?.text = self.appleMusicViewModel.getArtistName(for: sender)
+                detail.name?.text = temp.name
+                detail.artistName?.text = temp.artistName
                 detail.Image?.image = UIImage(data: data)
-                detail.date?.text = self.appleMusicViewModel.getDate(for: sender)
-                detail.genres?.text = self.appleMusicViewModel.getGenres(for: sender)
-                detail.id? = sender
+                detail.date?.text = self.appleMusicViewModel.getDate(for: temp.releaseDate)
+                detail.genres?.text = "\(temp.genres)"
+                detail.id? = id
+                if self.appleMusicViewModel.checkCordata(id: id){
+                    detail.setFav()
+                }
+                
+//                detail.f
                 
             }
         })
@@ -105,12 +116,12 @@ extension MusicViewController: UICollectionViewDataSource{
 
         if self.appleMusicViewModel.checkCordata(id: index){
             cell.setFav(false)
-            print(index)
+//            print(index)
         }
         else{
             cell.setFav(true)
         }
-        self.appleMusicViewModel.getImage(for: index) { data in
+        self.appleMusicViewModel.getImage(for: self.appleMusicViewModel.musics[index].artworkUrl100) { data in
             if let data = data{
                 DispatchQueue.main.async {
                     cell.imageView.image = UIImage(data: data)
@@ -165,18 +176,11 @@ extension MusicViewController: UICollectionViewDataSourcePrefetching{
 extension MusicViewController : CoreDataDelegate {
     func delegateCoreData(data: Data, id: Int?) {
         guard let id = id else{
-            print("empty id when delegate")
+//            print("empty id when delegate")
             return
         }
-        print("adding to coredata")
+//        print("adding to coredata")
         self.appleMusicViewModel.addToCoreData(id: id, data: data)
-//        self.cordataMamager.buildAlbum(data: data, name: name, artistName: artistName, date: date, genres: genres )
-//        var id = -1
-//        self.cordataMamager.saveContext()
-//        self.cordataMamager.buildAlbum(data: data, name: name, artistName: artistName, date: date, genres: genres)
-//        self.cordataMamager.saveContext()
-//        self.cordataMamager.addToCordata(id: id)
-
     }
     
     

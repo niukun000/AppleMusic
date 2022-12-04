@@ -26,7 +26,7 @@ class CollectionViewCell: UICollectionViewCell {
     private var dislike = UIImage(systemName: "heart")
     
 //    var coredataManager = CoreDataManager()
-    
+    var obj : AppleMusic?
     var delegate : CoreDataDelegate?
     
     
@@ -43,6 +43,14 @@ class CollectionViewCell: UICollectionViewCell {
     
     
     @IBAction func favButton(_ sender: Any) {
+//        if self.notFav == false{
+//            guard let obj = self.obj else{
+//                print("fav but no object saved")
+//                return
+//            }
+//
+//        }
+
         self.setFav(!self.getFav())
         self.show()
         print("fav selected")
